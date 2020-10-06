@@ -1,0 +1,10 @@
+---
+- name: Generate and disribute keys
+  vars:
+    user: ubuntu
+  hosts: localhost
+  tasks:
+    - name: Distribute key
+      shell:
+        cmd: cat ~/.ssh/id_rsa.pub | ssh -i ~/.ssh/id_rsa {{ user }}@{{ item }} "cat >> ~/.ssh/authorized_keys"
+      with_items:

@@ -1,0 +1,43 @@
+---
+- name: Create Infra for K8-cluster
+  hosts: localhost
+  gather_facts: False
+  vars:
+    keypair: aws-key
+    instance_type: t2.micro
+    security_group: default
+    image: ami-0eb89db7593b5d434
+    region: eu-west-2
+    subnet: subnet-082213e51ccfdcaa4 
+  tasks:
+    - name: Launch master instance
+      ec2:
+         key_name: "{{ keypair }}"
+         group: "{{ security_group }}"
+         instance_type: "{{ instance_type }}"
+         image: "{{ image }}"
+         wait: true
+         region: "{{ region }}"
+         vpc_subnet_id: "{{ subnet }}"
+         assign_public_ip: yes
+      register: ec2_master
+    - name: Ensure tags are present on a resource
+      ec2_tag:
+          region: eu-west-2
+          resource: i-0cc17e0a04ef47c51
+          state: present
+          tags:
+             Name: ubervol
+             env: prod
+    - name: Launch worker instance
+      ec2:
+         count: 2
+         key_name: "{{ keypair }}"
+         group: "{{ security_group }}"
+         instance_type: "{{ instance_type }}"
+         image: "{{ image }}"
+         wait: true
+         region: "{{ region }}"
+         vpc_subnet_id: "{{ subnet }}"
+         assign_public_ip: yes
+      register: ec2
